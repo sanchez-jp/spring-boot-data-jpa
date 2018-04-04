@@ -3,6 +3,7 @@ package com.bolsadeideas.springboot.app;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -12,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * En Spring Boot 2: implements WebMvcConfigurer
  */
 @Configuration
-public class MvcConfig  implements WebMvcConfigurer {
+public class MvcConfig implements WebMvcConfigurer {
 
     private final Logger log = LoggerFactory.getLogger(getClass()); // Logger para depuración por consola
     /**
@@ -30,6 +31,17 @@ public class MvcConfig  implements WebMvcConfigurer {
         .addResourceLocations(resourcePath); // Agrega la ubicación del recurso al que se va a acceder. (ruta absoluta)
     }
     */
+
+    /**
+     * Controlador parametrizable para redirigir la página de error 403 de inicio de sesión a una vista personalizada
+     *
+     * @param registry asistente para registro de controladores automáticos simples preconfigurados con código de estado
+     *                 y/o una vista.
+     */
+    public void addViewControllers(ViewControllerRegistry registry) {
+
+        registry.addViewController("/error_403").setViewName("error_403");
+    }
 
 
 }
