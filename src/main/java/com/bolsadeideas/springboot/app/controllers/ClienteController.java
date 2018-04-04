@@ -2,9 +2,10 @@ package com.bolsadeideas.springboot.app.controllers;
 
 import com.bolsadeideas.springboot.app.controllers.util.paginator.PageRender;
 import com.bolsadeideas.springboot.app.models.entity.Cliente;
-import com.bolsadeideas.springboot.app.models.entity.Factura;
 import com.bolsadeideas.springboot.app.models.service.IClienteService;
 import com.bolsadeideas.springboot.app.models.service.IUploadFileService;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -38,6 +41,8 @@ public class ClienteController {
 
     @Autowired // Inyecta el componente UploadFileService
     private IUploadFileService uploadFileService;
+
+    protected final Log logger = LogFactory.getLog(this.getClass());
 
     /**
      * Indica el lugar de donde se deben obtener las imagenes de los clientes
@@ -91,7 +96,18 @@ public class ClienteController {
      */
     @RequestMapping(value = {"/listar", "/"}, method = RequestMethod.GET)
     // Por defecto el método es GET, no sería necesario de indicarlo de forma explícita
-    public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
+    public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model, Authentication authentication) {
+
+        // Obtención de autenticación
+        if (authentication != null) {
+            logger.info("Hola usuario autenticado, tu username es: ".concat(authentication.getName()));
+        }
+
+        // Otra forma de hacerlo. De manera estática
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            logger.info("*(Forma estática) Hola usuario autenticado, tu username es: ".concat(auth.getName()));
+        }
 
         // PageRequest(page, size) => page: número de página actual; size:número de elementos por página
         Pageable pageRequest = PageRequest.of(page, 5);
