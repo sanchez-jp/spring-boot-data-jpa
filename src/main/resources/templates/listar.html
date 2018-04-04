@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/layout :: head"></head>
+<body>
+
+<!-- Cabecera de la página. Barra de navegación -->
+<header th:replace="layout/layout :: header"></header>
+
+<!-- Contenido principal (tabla) -->
+<!-- <div class="container py-4"> --> <!-- py-4 realiza un pading vertical de 4 -->
+<div class="container">
+    
+    <div class="card bg-light">
+        <div class="card-header" th:text="${titulo}"></div>
+        
+        <div class="card-body">
+            
+            <h4 class="card-tittle">
+                <a th:href="@{/form}" class="btn btn-primary btn-xs">Nuevo Cliente</a>
+            </h4>
+            
+            <table class="table table-striped">
+                
+                <thead class="thead-dark">
+                <tr>
+                    <th>id</th>
+                    <th>nombre</th>
+                    <th>apellido</th>
+                    <th>email</th>
+                    <th>fecha de creación</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="cliente: ${clientes}"> <!-- Itera igual que un foreach -->
+                    <td><a class="btn btn-primary btn-xs" th:href="@{/ver/} + ${cliente.id}" th:text="${cliente.id}"/>
+                    </td>
+                    <td th:text="${cliente.nombre}"></td>
+                    <td th:text="${cliente.apellido}"></td>
+                    <td th:text="${cliente.email}"></td>
+                    <td th:text="${cliente.createAt}"></td>
+                    <td><a type="button" th:href="@{/factura/form/} + ${cliente.id}" class="btn btn-outline-primary">Crear Factura</a>
+                    </td>
+                    <td><a type="button" th:href="@{/form/} + ${cliente.id}" class="btn btn-outline-primary">Editar</a>
+                    </td>
+                    <td><a type="button" th:href="@{/eliminar/} + ${cliente.id}" class="btn btn-outline-danger"
+                           onclick="return confirm('Va a eliminar el cliente ¿Continuar?')">Eliminar</a></td>
+                </tr>
+                </tbody>
+            
+            </table>
+            <nav th:replace="paginator-nav :: paginator"></nav>
+        </div>
+    </div>
+
+
+</div>
+
+<footer th:replace="layout/layout :: footer"></footer>
+</body>
+</html>

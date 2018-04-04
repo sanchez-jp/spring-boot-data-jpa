@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/layout :: head"></head>
+<body>
+
+<!-- Cabecera de página-->
+<header th:replace="layout/layout :: header"></header>
+
+<!-- Cuerpo: Contenedor con padding vertical de 4 -->
+<div class="container">
+    <div class="card border-primary text-center">
+        <div class="card-header">Inicio de sesión</div>
+        <div class="card-body">
+            <form th:action="@{/login}" method="post">
+            
+                <div class="form-group col-sm-6">
+                    <input type="text" name="username" id="username" class="form-control" placeholder="Usuario" autofocus required/>
+                </div>
+    
+                <div class="form-group col-sm-6">
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Contraseña" required/>
+                </div>
+                
+                <div class="form-group col-sm-6">
+                    <input type="submit" class="btn btn-lg btn-primary btn-block" value="Sign In"/>
+                </div>
+                <!--input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/-->
+            
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Pie de página -->
+<footer th:replace="layout/layout :: footer"></footer>
+</body>
+</html>

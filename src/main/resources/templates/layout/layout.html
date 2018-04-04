@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+
+<head th:fragment="head">
+    
+    <meta charset="UTF-8"/>
+    <title th:text="'Spring Boot: MVC + Thymeleaf + Data JPA' + ${titulo}">Title</title>
+    
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/jquery-ui.min.css}"/>
+
+</head>
+
+<body>
+
+<!-- Cabecera de la página. Barra de navegación -->
+<header th:fragment="header">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01"
+                aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+            <a class="navbar-brand" href="#">Preving</a>
+            
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Inicio <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/form}">Nuevo Cliente</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/listar}">Listado de Clientes</a>
+                </li>
+            </ul>
+            
+            <!-- form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Search"/>
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buscar</button>
+            </form-->
+    
+            <ul class="navbar-nav navbar-right">
+                <li sec:authorize="!isAuthenticated()" class="nav-item"><a class="btn btn-outline-primary" th:href="@{login}">Sign In</a></li>
+    
+                <li sec:authorize="isAuthenticated()" class="dropdown show">
+                    <a class="btn btn-outline-primary dropdown-toggle" href="#"
+                       role="button" id="dropdownMenuLink" data-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">
+                        <span sec:authentication="name"></span>
+                    </a>
+        
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <form th:action = "@{/logout}" method="post">
+                        
+                        </form>
+                    </div>
+                </li>
+            </ul>
+            
+        </div>
+    </nav>
+    <div class="container">
+        <!-- Necesario siempre añadir la etiqueta th (thymeleaf) para acceder al recurso estático -->
+        <img th:src="@{/images/logo_preving_footer.png}" width="100%"/>
+    </div>
+    
+    <!-- Mensajes flash -->
+    <div class="alert alert-success" th:if="${success != null}" th:text="${success}"></div>
+    <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
+    <div class="alert alert-warning" th:if="${warning != null}" th:text="${warning}"></div>
+    <div class="alert alert-info" th:if="${info != null}" th:text="${info}"></div>
+</header>
+
+<!-- Pié de la página -->
+<footer th:fragment="footer" class="container">
+    <hr/>
+    <img th:src="@{/images/logo-preving-2.png}" alt="preving logo"/>
+    
+    <p sec:authorize="isAuthenticated()">
+        Usuario logeado: <span sec:authentication="name"></span> | Roles: <span sec:authentication="principal.authorities"></span>
+    </p>
+    
+    <p>&copy; Preving 2018</p>
+    <p>Proyecto desarrollado en IDE IntelliJ con Spring Boot</p>
+    <p>Developer: Juan Pedro Sánchez Álvarez</p>
+    
+</footer>
+<!-- JavaScript opcional -->
+<!-- jQuery first, then Bootstrap JS -->
+<script th:src="@{/javascript/jquery-3.2.1.min.js}"></script>
+<script th:src="@{/javascript/bootstrap.min.js}"></script>
+<script th:src="@{/javascript/jquery-ui.min.js}"></script>
+
+</body>
+</html>

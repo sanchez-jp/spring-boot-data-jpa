@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/layout :: head"></head>
+<body>
+
+<!-- Cabecera de página-->
+<header th:replace="layout/layout :: header"></header>
+
+<!-- Cuerpo: Contenedor con padding vertical de 4 -->
+<div class="container">
+    <div class="card bg-light">
+        <div class="card-header" th:text="${titulo}"></div>
+        <div class="card-body">
+            
+            <h4 class="card-title">
+                <a type="button" th:href="@{/factura/form/} + ${cliente.id}" class="btn btn-outline-primary">Crear
+                                                                                                             Factura</a>
+            </h4>
+            
+            <!-- Validamos que exista la foto. Si la foto no existe no se mostrará (strings: helper de thymeleaf)-->
+            <img th:if="${#strings.length(cliente.foto) > 0}" class="img-thumbnail rounded float-left"
+                 style="max-width: 25%;"
+                 th:src="@{'/uploads/' +${cliente.foto}}" th:alt="${cliente.foto}"/>
+            
+            <!-- Datos del cliente -->
+            <ul class="list-group">
+                <li class="list-group-item" th:text="${cliente.nombre}"></li>
+                <li class="list-group-item" th:text="${cliente.apellido}"></li>
+                <li class="list-group-item" th:text="${cliente.email}"></li>
+                <li class="list-group-item" th:text="${cliente.createAt}"></li>
+            </ul>
+            
+            <!-- Muestra la alerta si el cliente no tiene facturas asignadas (lista facturas de cliente es vacía) -->
+            <div th:if="${#lists.isEmpty(cliente.facturas)}" class="alert alert-info my-4"
+                 th:text="'No hay facturas asignadas para el cliente ' + ${cliente.nombre} + ' ' + ${cliente.apellido}"></div>
+            
+            <!-- Muestra la tabla si el cliente tiene facturas asignadas (lista facturas de cliente contiene elementos) -->
+            <table th:if="${not #lists.isEmpty(cliente.facturas)}" class="table table-bordered table-striped my-4">
+                <thead class="thead-inverse">
+                
+                <tr>
+                    <th>Hoja</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Ver</th>
+                    <th>Eliminar</th>
+                </tr>
+                
+                </thead>
+                <tbody>
+                
+                <tr th:each="factura: ${cliente.facturas}">
+                    <td th:text="${factura.id}"></td>
+                    <td th:text="${factura.descripcion}"></td>
+                    <td th:text="${factura.createAt}"></td>
+                    <td th:text="${factura.total}"></td>
+                    <td><a class="btn btn-primary btn-xs" th:href="@{'/factura/ver/' + ${factura.id}}"
+                           th:text="'detalle'"></a></td>
+                    <td><a class="btn btn-danger btn-xs" th:href="@{'/factura/eliminar/' + ${factura.id}}"
+                           th:text="'eliminar'"
+                           onclick="return confirm('¿Seguro que desea eliminar la factura?');"></a></td>
+                </tr>
+                
+                </tbody>
+            
+            </table>
+        
+        </div>
+    </div>
+</div>
+
+<!-- Pie de página -->
+<footer th:replace="layout/layout :: footer"></footer>
+</body>
+</html>

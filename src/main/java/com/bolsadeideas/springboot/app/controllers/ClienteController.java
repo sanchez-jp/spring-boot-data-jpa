@@ -1,0 +1,216 @@
+package com.bolsadeideas.springboot.app.controllers;
+
+import com.bolsadeideas.springboot.app.controllers.util.paginator.PageRender;
+import com.bolsadeideas.springboot.app.models.entity.Cliente;
+import com.bolsadeideas.springboot.app.models.entity.Factura;
+import com.bolsadeideas.springboot.app.models.service.IClienteService;
+import com.bolsadeideas.springboot.app.models.service.IUploadFileService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import javax.validation.Valid;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Map;
+
+/**
+ * Controlador encargado de gestionar las acciones de los clientes. Gestiona los clientes
+ */
+@Controller
+@SessionAttributes("cliente") // Guarda en los atributos de la sesión el objeto cliente mapeado al formulario
+public class ClienteController {
+
+    @Autowired // Resuelve mediante inyección las dependencias de un bean de Spring (final real)
+    //@Qualifier("clienteDaoJPA") // Identifica el bean concreto que se dedea utilizar
+    private IClienteService clienteService; // Siempre se importa el tipo más genérico
+
+    @Autowired // Inyecta el componente UploadFileService
+    private IUploadFileService uploadFileService;
+
+    /**
+     * Indica el lugar de donde se deben obtener las imagenes de los clientes
+     * Es una alternativa para cargar recursos diferente a la dispuesta en la clase MvcConfig.java
+     *
+     * @param filename el nombre del archivo que se desea obtener de los recursos
+     * @return
+     */
+    @GetMapping(value = "/uploads/{filename:.+}")
+    // filename:.+ => Necesario para que Spring no trunque la extensión del archivo
+    public ResponseEntity<Resource> verFoto(@PathVariable String filename) {
+
+        Resource recurso = null;
+        try {
+            recurso = uploadFileService.load(filename);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""
+                + recurso.getFilename() + "\"").body(recurso);
+    }
+
+    /**
+     * Muestra información en detalle de un cliente
+     *
+     * @param id    identificador del cliente
+     * @param model mapa de valores a ser representados en la vista
+     * @param flash pasa mensajes a la vista para ser mostrados.
+     * @return
+     */
+    @GetMapping(value = "/ver/{id}")
+    public String ver(@PathVariable(value = "id") Long id, Map<String, Object> model, RedirectAttributes flash) {
+
+        Cliente cliente = clienteService.fetchByIdWithFacturas(id); //clienteService.findOne(id);
+        if (cliente == null) {
+            flash.addFlashAttribute("error", "El cliente no existe en la base de datos");
+            return "redirect:/listar";
+        }
+        model.put("cliente", cliente); // Pasa el cliente a la vista
+        model.put("titulo", "Detalle cliente: " + cliente.getNombre() + " " + cliente.getApellido()); // Pasa título a la vista
+
+        return "ver";
+    }
+
+    /**
+     * Muestra los datos de los clientes en la vista de tabla de clientes
+     *
+     * @param model Modelo de valores a ser representados en la vista
+     * @return el nombre de la vista con la que se comunica el método
+     */
+    @RequestMapping(value = {"/listar", "/"}, method = RequestMethod.GET)
+    // Por defecto el método es GET, no sería necesario de indicarlo de forma explícita
+    public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
+
+        // PageRequest(page, size) => page: número de página actual; size:número de elementos por página
+        Pageable pageRequest = PageRequest.of(page, 5);
+
+        Page<Cliente> clientes = clienteService.findAll(pageRequest);
+
+        PageRender<Cliente> pageRender = new PageRender<>("/listar", clientes);
+
+        model.addAttribute("titulo", "Listado de clientes");
+        model.addAttribute("clientes", clientes); // Retornamos clientes con paginación
+        model.addAttribute("page", pageRender);
+        return "listar";
+    }
+
+    /**
+     * Muestra los datos de un cliente en el formulario de la vista
+     *
+     * @param model mapa de valores para el modelo de la vista
+     * @return el nombre de la vista con la que se comunica el método
+     */
+    @RequestMapping(value = "/form") // Este método es de comunicación bidireccional
+    public String crear(Map<String, Object> model) {
+
+        Cliente cliente = new Cliente();
+        model.put("cliente", cliente);
+        model.put("titulo", "Formulario de Cliente");
+        return "form";
+    }
+
+    /**
+     * PathVariable inyecta el valor del parámetro de la ruta
+     *
+     * @param id    identificador del cliente a editar
+     * @param model mapa de valores a ser representados en la vista
+     * @return el nombre de la vista a mostrar
+     */
+    @RequestMapping(value = "/form/{id}") // Inserción de parámetro en ruta mediante el patrón WildCard
+    public String editar(@PathVariable(value = "id") Long id, Map<String, Object> model, RedirectAttributes flash) {
+
+        Cliente cliente = null;
+
+        if (id > 0) {
+            cliente = clienteService.findOne(id);
+
+            if (cliente == null) {
+                flash.addFlashAttribute("error", "El id del cliente no existe en la BD");
+                return "redirect:/listar"; // Redirige al listar en caso de que no exista el id
+            }
+        } else {
+            flash.addFlashAttribute("error", "El id del cliente no puede ser cero");
+            return "redirect:/listar"; // Redirige al listar en caso de que no exista el id
+        }
+        model.put("cliente", cliente);
+        model.put("titulo", "Editar Cliente");
+        return "/form";
+    }
+
+    /**
+     * Guarda los datos de un cliente en la base de datos
+     *
+     * @param cliente el cliente a guardar en la BD
+     * @return el nombre de la vista a mostrar tras guardar los datos de cliente (redirección)
+     */
+    @RequestMapping(value = "/form", method = RequestMethod.POST)
+    public String guardar(@Valid Cliente cliente, BindingResult result, Model model, @RequestParam("file") MultipartFile foto, RedirectAttributes flash, SessionStatus status) {
+
+        if (result.hasErrors()) {
+            // Añadimos nuevamente el título aquí para que no desaparezca al refrescar (validar) el formulario
+            model.addAttribute("titulo", "Formulario de cliente");
+            return "form";
+        }
+
+        // Si la imágen no está vacía guardar en la ruta especificada
+        if (!foto.isEmpty()) {
+
+            if (cliente.getId() != null && cliente.getId() > 0 && cliente.getFoto() != null && cliente.getFoto().length() > 0) {
+
+                uploadFileService.delete(cliente.getFoto());
+            }
+
+            String uniqueFilename = null;
+            try {
+                uniqueFilename = uploadFileService.copy(foto);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            flash.addFlashAttribute("info", "'" + uniqueFilename + "' subida correctamente"); // Paso de mensaje al flash
+
+            cliente.setFoto(uniqueFilename); // Paso de nombre de foto al cliente
+        }
+        // Si el id no es nulo, el cliente guardado es un cliente editado, si es nulo, es un nuevo cliente
+        String mensajeFlash = (cliente.getId() != null) ? "¡Cliente editado con éxito!" : "¡Cliente guardado con éxito!";
+
+        clienteService.save(cliente);
+        status.setComplete(); // Elimina el objeto cliente de la sesión
+        flash.addFlashAttribute("success", mensajeFlash);
+        return "redirect:/listar";
+    }
+
+    /**
+     * Elimina un cliente
+     *
+     * @param id    el identificador del cliente a eliminar
+     * @param flash mensaje de redirección
+     * @return url de la vista a la que se redirige
+     */
+    @RequestMapping(value = "/eliminar/{id}")
+    public String eliminar(@PathVariable(value = "id") Long id, RedirectAttributes flash) {
+        if (id > 0) {
+            Cliente cliente = clienteService.findOne(id); // Se obtiene previamente el cliente para poder eliminar su foto de los recursos
+            clienteService.delete(id);
+            flash.addFlashAttribute("success", "¡Cliente eliminado con éxito!");
+
+            if (uploadFileService.delete(cliente.getFoto())) {
+                flash.addFlashAttribute("info", "Imagen " + cliente.getFoto() + " eliminada con éxito");
+            }
+        }
+        return "redirect:/listar";
+    }
+
+}

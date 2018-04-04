@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/layout :: head"></head>
+<body>
+
+<!-- Cabecera de página-->
+<header th:replace="layout/layout :: header"></header>
+
+<!-- Cuerpo: Contenedor con padding vertical de 4 -->
+<div class="container">
+    <div class="card bg-light">
+        <div class="card-header" th:text="${titulo}"></div>
+        <div class="card-body">
+        
+        </div>
+    </div>
+</div>
+
+<!-- Pie de página -->
+<footer th:replace="layout/layout :: footer"></footer>
+</body>
+</html>

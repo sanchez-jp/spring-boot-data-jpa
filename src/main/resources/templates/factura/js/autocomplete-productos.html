@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<script type="text/javascript" th:fragment="javascript">
+
+    /**
+     * Implementa la librería jQuery UI, esta librería provee todos los componentes gráficos relacionados con las
+     * interfaces de usuario.
+     *
+     * En esta caso, se implementa el método autocomplete, donde el usuario a través de un campo de texto (input)
+     * va realizando peticiones asincronas AJAX al servidor a medida que va escribiendo, estas peticiones son
+     * atendidas por el controlador. Un método handler que se encarga de manejar esta petición AJAX va a tomar el
+     * parámetro enviado y va a buscar los elementos que coincidan con ese valor (en este caso productos), los
+     * elementos encontrados son retornados en una estructura JSON y son mostrados finalmente en el campo autocomplete.
+     *
+     * Estructura básica del script:
+     *
+     * $( function() {
+     *      var availableTags = [...]; // Array de etiquetas resultado
+     *      $( "#tags" ).autocomplete({
+     *          source: availableTags
+     *      });
+     * } );
+     *
+     */
+    $(document).ready(function () { // ready: Comprueba que el documento html esté completamente cargado
+
+        /**
+         * Método autocomplete, asociado al campo buscar_producto (referencia al id del campo: #buscar_producto)
+         * Implementa dos métodos importantes: source y select
+         */
+        $("#buscar_producto").autocomplete({
+
+            /**
+             * Método source: encargado de realizar la petición AJAX
+             * @param request solicitud que contiene el term (término) con el valor actual de la entrada de texto
+             * @param response respuesta con los datos filtrados en función del term proporcionado
+             */
+            source: function (request, response) { // El método source se encarga de realizar la petición AJAX
+                $.ajax({
+                    /*
+                     * Mapping url hacia un método handler del controlador.
+                     * Se encarga de manejar la peticion AJAX y realiza la consulta para devolver los elementos
+                     * encontrados.
+                     *
+                     * A través del parámetro term se obtiene el valor que el usuario escribe a través del input de
+                     * búsqueda
+                     */
+                    url: "/factura/cargar-productos/" + request.term,
+
+                    /* Tipo de dato devuelto por AJAX */
+                    dataType: "json",
+
+                    /* Opcional:  Pasar el request.term  como param en el data */
+                    data: { // Array
+                        term: request.term
+                    },
+
+                    /* Sucsess recibe la respuesta de AJAX en formato JSON */
+                    success: function (data) { // Se encarga de recibir los datos
+
+                        /* response pasa la respuesta al auto-complete */
+                        response($.map(data, function (item) { // map(data, item) se encarga de realizar un proceso por cada elemento del data
+                            return { // Especificación del retorno
+                                value: item.id,
+                                label: item.nombre,
+                                precio: item.precio
+                            };
+                        }));
+                    }
+                });
+            },
+
+            /**
+             * Método select: Permite realizar las operaciones pertinentes con los datos obtenidos tras seleccionar un
+             * elemento del auto-complete
+             * @param event
+             * @param ui
+             * @returns {boolean}
+             */
+            select: function (event, ui) {
+                // $("#buscar_producto").val(ui.item.label);
+
+                // Si el producto ya existe en el detalle de pedido incrementa la cantidad en 1
+                if (itemsHelper.hasProducto(ui.item.value)) {
+                    itemsHelper.incrementaCantidad(ui.item.value, ui.item.precio);
+                    return false;
+                }
+
+                var linea = $("#plantillaItemsfactura").html(); // Contenido html del item (tr)
+
+                linea = linea.replace(/{ID}/g, ui.item.value);
+                linea = linea.replace(/{NOMBRE}/g, ui.item.label);
+                linea = linea.replace(/{PRECIO}/g, ui.item.precio);
+
+                $("#cargarItemProductos").find("tbody").append(linea);
+                itemsHelper.calcularImporte(ui.item.value, ui.item.precio, 1);
+
+                return false;
+            }
+        });
+
+        /** Elimina el contenido de la plantilla al guardar la factura */
+        $("form").submit(function () {
+            $("#plantillaItemsfactura").remove();
+            return;
+        });
+
+    });
+
+    /**
+     * Contiene algunos métodos de ayuda para poder calcular el importe, eliminar línea de factura e incrementar la
+     * cantidad de productos de una línea cuando se añade un producto previamente añadido.
+     */
+    var itemsHelper = {
+        /**
+         * Calcula el subtotal de una línea de factura
+         * @param id el identificador de producto
+         * @param precio el precio unitario del producto
+         * @param cantidad el número de unidaes del producto
+         */
+        calcularImporte: function (id, precio, cantidad) {
+            $("#total_importe_" + id).html(parseInt(precio) * parseInt(cantidad));
+            this.calcularGranTotal(); // Recalcula el total de la factura
+        },
+
+        /**
+         * Busca línea por línea en el detalle de la factura si existe el id del producto seleccionado.
+         * @param id identificador de producto seleccionado
+         */
+        hasProducto: function (id) {
+
+            var resultado = false;
+
+            $('input[name = "item_id[]"]').each(function () {
+                if (parseInt(id) == parseInt($(this).val())) {
+                    resultado = true;
+                }
+            });
+            return resultado;
+        },
+
+        /**
+         * Incrementa la cantidad de unidades de producto en una línea de factura
+         * @param id el identificador del producto a incrementar
+         * @param precio el precio del producto
+         */
+        incrementaCantidad: function (id, precio) {
+            var cantidad = $("#cantidad_" + id).val() ? parseInt($("#cantidad_" + id).val()) : 0; // Valida si la cantidad tiene un valor numérico
+            $("#cantidad_" + id).val(++cantidad);
+            this.calcularImporte(id, precio, cantidad);
+        },
+
+        /**
+         * Elimina una línea de factura
+         * @param id identificador de la línea de factura
+         */
+        eliminarLineaFactura: function (id) {
+            $("#row_" + id).remove();
+            this.calcularGranTotal(); // Recalcula el total de la factura
+        },
+
+        /**
+         * Calcula el importe total de la factura sumando los importes de cada item de factura
+         */
+        calcularGranTotal: function () {
+            var total = 0;
+
+            $('span[id^="total_importe_"]').each(function () { // Con el símbolo sombrero (), se consigue que busque en todos los span donde la id sea igual a "total_importe_"
+
+                // Por cada elemento span obtenemos su contenido (html) y lo convertimos a Integer para sumarlo al total
+                total += parseInt($(this).html())
+            });
+
+            $('#gran_total').html(total); // Almacenamos el total en el span de gran_total
+        }
+    }
+</script>
+
+</body>
+</html>
