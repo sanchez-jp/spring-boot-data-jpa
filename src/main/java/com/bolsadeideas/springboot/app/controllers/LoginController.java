@@ -14,6 +14,8 @@ public class LoginController {
     /**
      * Método controlador para login
      *
+     * @param error     parámetro de url que indica si se ha producido algún tipo de error durante el inicio de sesión
+     * @param logout    parámetro de url que indica si la sesión de usuario ha sido cerrada
      * @param model     contenedor para pasar datos a la vista
      * @param principal el usuario actualmente logeado
      * @param flash     contenedor para pasar mensajes flash a la vista
@@ -21,16 +23,21 @@ public class LoginController {
      */
     @GetMapping("/login")
     public String login(@RequestParam(value = "error", required = false) String error,
-            Model model, Principal principal, RedirectAttributes flash) {
+                        @RequestParam(value = "logout", required = false) String logout,
+                        Model model, Principal principal, RedirectAttributes flash) {
 
         if (principal != null) {
             flash.addFlashAttribute("info", "Ya ha iniciado sesión");
             return "redirect:/";
         }
 
-        if(error != null){
+        if (error != null) {
             model.addAttribute("error", "Error en el login: Nombre de usuario o contraseña incorrecta. " +
                     "Por favor, vuelva a intentarlo");
+        }
+
+        if (logout != null) {
+            model.addAttribute("success", "Sesión cerrada con éxito");
         }
 
         return "login";

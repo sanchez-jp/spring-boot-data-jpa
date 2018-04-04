@@ -43,25 +43,30 @@
                 <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Search"/>
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buscar</button>
             </form-->
-    
+            
             <ul class="navbar-nav navbar-right">
-                <li sec:authorize="!isAuthenticated()" class="nav-item"><a class="btn btn-outline-primary" th:href="@{login}">Sign In</a></li>
-    
+                <li sec:authorize="!isAuthenticated()" class="nav-item"><a class="btn btn-outline-primary"
+                                                                           th:href="@{login}">Sign In</a></li>
+                
                 <li sec:authorize="isAuthenticated()" class="dropdown show">
                     <a class="btn btn-outline-primary dropdown-toggle" href="#"
                        role="button" id="dropdownMenuLink" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">
                         <span sec:authentication="name"></span>
                     </a>
-        
+                    
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <form th:action = "@{/logout}" method="post">
-                        
+                        <form id="logoutForm" th:action="@{/logout}" method="post">
+                            <button class="dropdown-item" onclick="document.getElementById('logoutForm').submit;"
+                                    type="submit">Sign Out
+                            </button>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <!--input hidden con seguridad contra Cross Site Request Forgery -->
                         </form>
                     </div>
                 </li>
             </ul>
-            
+        
         </div>
     </nav>
     <div class="container">
@@ -82,19 +87,21 @@
     <img th:src="@{/images/logo-preving-2.png}" alt="preving logo"/>
     
     <p sec:authorize="isAuthenticated()">
-        Usuario logeado: <span sec:authentication="name"></span> | Roles: <span sec:authentication="principal.authorities"></span>
+        Usuario logeado: <span sec:authentication="name"></span> | Roles: <span
+            sec:authentication="principal.authorities"></span>
     </p>
     
     <p>&copy; Preving 2018</p>
     <p>Proyecto desarrollado en IDE IntelliJ con Spring Boot</p>
     <p>Developer: Juan Pedro Sánchez Álvarez</p>
     
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Bootstrap JS -->
+    <script th:src="@{/js/jquery-3.2.1.min.js}"></script>
+    <script th:src="@{/js/popper.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/jquery-ui.min.js}"></script>
 </footer>
-<!-- JavaScript opcional -->
-<!-- jQuery first, then Bootstrap JS -->
-<script th:src="@{/javascript/jquery-3.2.1.min.js}"></script>
-<script th:src="@{/javascript/bootstrap.min.js}"></script>
-<script th:src="@{/javascript/jquery-ui.min.js}"></script>
 
 </body>
 </html>
