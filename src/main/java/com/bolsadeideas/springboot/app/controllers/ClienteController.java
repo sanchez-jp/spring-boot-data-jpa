@@ -14,6 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +29,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -109,6 +113,13 @@ public class ClienteController {
             logger.info("*(Forma estática) Hola usuario autenticado, tu username es: ".concat(auth.getName()));
         }
 
+        // Otra forma (la más correcta)
+        if (hasRole("ROLE_ADMIN")) {
+            logger.info("Hola ".concat(auth.getName()).concat(" . Tienes acceso."));
+        } else {
+            logger.info("Hola ".concat(auth.getName()).concat(" . No tienes acceso."));
+        }
+
         // PageRequest(page, size) => page: número de página actual; size:número de elementos por página
         Pageable pageRequest = PageRequest.of(page, 5);
 
@@ -120,6 +131,45 @@ public class ClienteController {
         model.addAttribute("clientes", clientes); // Retornamos clientes con paginación
         model.addAttribute("page", pageRender);
         return "listar";
+    }
+
+    /**
+     * Valida el rol del usuario
+     *
+     * @param role nombre del rol del usuario
+     * @return TRUE si se verifica el rol del usuario, FALSE en caso comtrario
+     */
+    private boolean hasRole(String role) {
+        SecurityContext context = SecurityContextHolder.getContext();
+
+        if (context == null) {
+            return false;
+        }
+
+        Authentication auth = context.getAuthentication();
+
+        if (auth == null) {
+            return false;
+        }
+
+        // Coleccion de roles (authorities) -> Colección <Cualquier objeto que implemente la interfaz GrantedAuthority>
+        // Almacena los roles del usuario autenticado
+        // Toda clase rol o que represente un rol en Spring Security tiene que implementar la interfaz GrantedAuthority
+        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
+
+        /*for (GrantedAuthority authority : authorities) {
+            if (role.equals(authority.getAuthority())) {
+                logger.info("Hola usuario ".concat(auth.getName()).concat(" tu rol es: ").concat(authority.getAuthority()));
+                return true;
+            }
+        }
+
+        return false;
+        */
+
+        /* El método contains(GrantedAuthority) retorna un booleano, TRUE o FALSE, si contiene o no el elemento en la
+         * colección */
+        return authorities.contains(new SimpleGrantedAuthority(role));
     }
 
     /**
