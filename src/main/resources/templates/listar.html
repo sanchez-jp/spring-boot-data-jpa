@@ -25,10 +25,10 @@
                 <thead class="thead-dark">
                 <tr>
                     <th sec:authorize="hasRole('ROLE_USER')">id</th>
-                    <th>nombre</th>
-                    <th>apellido</th>
-                    <th>email</th>
-                    <th>fecha de creación</th>
+                    <th th:text="#{text.cliente.nombre}">nombre</th>
+                    <th th:text="#{text.cliente.apellido}">apellido</th>
+                    <th th:text="#{text.cliente.email}">email</th>
+                    <th th:text="#{text.cliente.createAt}">fecha de creación</th>
                     <th sec:authorize="hasRole('ROLE_ADMIN')"></th> <!-- Columna botón "Crear Factura" -->
                     <th sec:authorize="hasRole('ROLE_ADMIN')"></th> <!-- Columna botón "Editar" cliente -->
                     <th sec:authorize="hasRole('ROLE_ADMIN')"></th> <!-- Columna botón "Eliminar" cliente -->
