@@ -45,6 +45,11 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addViewController("/error_403").setViewName("error_403");
     }
 
+    /**
+     * Obtiene un codificador BCrypt pata contraseñas
+     *
+     * @return el codificador para contraseñas
+     */
     @Bean // Indica que es un componente Bean de Spring
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
