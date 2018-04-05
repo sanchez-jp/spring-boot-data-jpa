@@ -18,6 +18,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -100,24 +102,42 @@ public class ClienteController {
      */
     @RequestMapping(value = {"/listar", "/"}, method = RequestMethod.GET)
     // Por defecto el método es GET, no sería necesario de indicarlo de forma explícita
-    public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model, Authentication authentication) {
+    public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model,
+                         Authentication authentication,
+                         HttpServletRequest request) {
 
-        // Obtención de autenticación
+        // Obtención de autenticación. Método 1
         if (authentication != null) {
             logger.info("Hola usuario autenticado, tu username es: ".concat(authentication.getName()));
         }
 
-        // Otra forma de hacerlo. De manera estática
+        // Obtención de autenticación. Método 2
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             logger.info("*(Forma estática) Hola usuario autenticado, tu username es: ".concat(auth.getName()));
         }
 
-        // Otra forma (la más correcta)
+        // Validación de rol. Método 1. Uso de método hasRole implementado (forma programática)
         if (hasRole("ROLE_ADMIN")) {
-            logger.info("Hola ".concat(auth.getName()).concat(" . Tienes acceso."));
+            logger.info("Hola ".concat(auth.getName()).concat(". Tienes acceso."));
         } else {
-            logger.info("Hola ".concat(auth.getName()).concat(" . No tienes acceso."));
+            logger.info("Hola ".concat(auth.getName()).concat(". No tienes acceso."));
+        }
+
+        // Validación de rol. Método 2. Usando SecurityContextHolderAwareRequestWrapper
+        SecurityContextHolderAwareRequestWrapper securityContext = new SecurityContextHolderAwareRequestWrapper(request, "");
+
+        if (securityContext.isUserInRole("ROLE_ADMIN")) {
+            logger.info("Forma usando SecurityContextHolderAwareRequestWrapper: Hola ".concat(auth.getName()).concat(". Tienes acceso."));
+        } else {
+            logger.info("Forma usando SecurityContextHolderAwareRequestWrapper: Hola ".concat(auth.getName()).concat(". No tienes acceso."));
+        }
+
+        // Validación de rol. Método 3. (más simple) Usando HttpServletRequest (request) de forma nativa
+        if (request.isUserInRole("ROLE_ADMIN")) {
+            logger.info("Forma usando HttpServletRequest: Hola ".concat(auth.getName()).concat(". Tienes acceso."));
+        } else {
+            logger.info("Forma usando HttpServletRequest: Hola ".concat(auth.getName()).concat(". No tienes acceso."));
         }
 
         // PageRequest(page, size) => page: número de página actual; size:número de elementos por página
