@@ -13,6 +13,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -57,6 +59,7 @@ public class ClienteController {
      * @param filename el nombre del archivo que se desea obtener de los recursos
      * @return
      */
+    @Secured("ROLE_USER") // Sólo los usuarios autenticados tienen acceso
     @GetMapping(value = "/uploads/{filename:.+}")
     // filename:.+ => Necesario para que Spring no trunque la extensión del archivo
     public ResponseEntity<Resource> verFoto(@PathVariable String filename) {
@@ -80,6 +83,7 @@ public class ClienteController {
      * @param flash pasa mensajes a la vista para ser mostrados.
      * @return
      */
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping(value = "/ver/{id}")
     public String ver(@PathVariable(value = "id") Long id, Map<String, Object> model, RedirectAttributes flash) {
 
@@ -198,6 +202,7 @@ public class ClienteController {
      * @param model mapa de valores para el modelo de la vista
      * @return el nombre de la vista con la que se comunica el método
      */
+    @Secured("ROLE_ADMIN")
     @RequestMapping(value = "/form") // Este método es de comunicación bidireccional
     public String crear(Map<String, Object> model) {
 
@@ -214,6 +219,7 @@ public class ClienteController {
      * @param model mapa de valores a ser representados en la vista
      * @return el nombre de la vista a mostrar
      */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(value = "/form/{id}") // Inserción de parámetro en ruta mediante el patrón WildCard
     public String editar(@PathVariable(value = "id") Long id, Map<String, Object> model, RedirectAttributes flash) {
 
@@ -241,6 +247,7 @@ public class ClienteController {
      * @param cliente el cliente a guardar en la BD
      * @return el nombre de la vista a mostrar tras guardar los datos de cliente (redirección)
      */
+    @Secured("ROLE_ADMIN")
     @RequestMapping(value = "/form", method = RequestMethod.POST)
     public String guardar(@Valid Cliente cliente, BindingResult result, Model model, @RequestParam("file") MultipartFile foto, RedirectAttributes flash, SessionStatus status) {
 
@@ -285,6 +292,7 @@ public class ClienteController {
      * @param flash mensaje de redirección
      * @return url de la vista a la que se redirige
      */
+    @Secured("ROLE_ADMIN")
     @RequestMapping(value = "/eliminar/{id}")
     public String eliminar(@PathVariable(value = "id") Long id, RedirectAttributes flash) {
         if (id > 0) {
