@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "authorities", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "authority"})})
-public class Rol implements Serializable {
+public class Role implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

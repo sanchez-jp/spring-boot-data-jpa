@@ -22,7 +22,7 @@ public class Usuario implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
-    private List<Rol> roles;
+    private List<Role> roles;
 
     /**
      * Obtiene el identificador del usuario
@@ -101,7 +101,7 @@ public class Usuario implements Serializable {
      *
      * @return lista con los roles de acceso del usuario.
      */
-    public List<Rol> getRoles() {
+    public List<Role> getRoles() {
         return roles;
     }
 
@@ -110,7 +110,7 @@ public class Usuario implements Serializable {
      *
      * @param roles la lista de roles para el usuario
      */
-    public void setRoles(List<Rol> roles) {
+    public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
 
