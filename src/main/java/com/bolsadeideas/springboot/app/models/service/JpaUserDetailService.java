@@ -31,7 +31,7 @@ public class JpaUserDetailService implements UserDetailsService {
      *
      * @param username nombre de usuario del que se quiere obtener información
      * @return los detalles de un usuario
-     * @throws UsernameNotFoundException
+     * @throws UsernameNotFoundException excepción de nombre de usuario no encontrado
      */
     @Override
     @Transactional(readOnly = true)
@@ -39,12 +39,13 @@ public class JpaUserDetailService implements UserDetailsService {
         Usuario usuario = usuarioDao.findByUsername(username);
 
         if (usuario == null) {
-            logger.error("Error login: No existe el usuario".concat(username));
+            logger.error("Error login: No existe el usuario ".concat(username));
             throw new UsernameNotFoundException("Username ".concat(username).concat(" no existe en el sistema!"));
         }
 
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (Role role : usuario.getRoles()) {
+            logger.info("Role: ".concat(role.getAuthority())); // Muestra en consola el nombre del rol
             authorities.add(new SimpleGrantedAuthority(role.getAuthority()));
         }
 

@@ -74,3 +74,14 @@ INSERT INTO facturas_items (cantidad, factura_id, producto_id) VALUES(1, 1, 7);
 
 INSERT INTO facturas (descripcion, observacion, cliente_id, create_at) VALUES('Factura Bicicleta', 'Alguna nota importante!', 1, NOW());
 INSERT INTO facturas_items (cantidad, factura_id, producto_id) VALUES(3, 2, 6);
+
+/* Populate tabla users */
+INSERT INTO users (id, username, password, enable)
+VALUES (1, 'andres', '$2a$10$Tb6rAxz5HrlkrcO1y9kNCulAeoT3NmUgXNGvZ4l1XiGFIjM/G80BW', 1);
+INSERT INTO users (id, username, password, enable)
+VALUES (2, 'admin', '$2a$10$D9kaJYEal1hHPc6JG9Hk9eP.JOEtotmSHBxaJizt9IfATn9R0qMyu', 1);
+
+/* Populate tabla authorities */
+INSERT INTO authorities (id, user_id, authority) VALUES (1, 1, 'ROLE_USER');
+INSERT INTO authorities (id, user_id, authority) VALUES (3, 2, 'ROLE_ADMIN');
+INSERT INTO authorities (id, user_id, authority) VALUES (2, 2, 'ROLE_USER');
