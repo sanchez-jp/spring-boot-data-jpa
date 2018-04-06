@@ -7,6 +7,7 @@ import com.bolsadeideas.springboot.app.models.service.IUploadFileService;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +35,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -43,6 +45,8 @@ import java.util.Map;
 @SessionAttributes("cliente") // Guarda en los atributos de la sesión el objeto cliente mapeado al formulario
 public class ClienteController {
 
+    protected final Log logger = LogFactory.getLog(this.getClass());
+
     @Autowired // Resuelve mediante inyección las dependencias de un bean de Spring (final real)
     //@Qualifier("clienteDaoJPA") // Identifica el bean concreto que se dedea utilizar
     private IClienteService clienteService; // Siempre se importa el tipo más genérico
@@ -50,7 +54,8 @@ public class ClienteController {
     @Autowired // Inyecta el componente UploadFileService
     private IUploadFileService uploadFileService;
 
-    protected final Log logger = LogFactory.getLog(this.getClass());
+    @Autowired
+    private MessageSource messageSource;
 
     /**
      * Indica el lugar de donde se deben obtener las imagenes de los clientes
@@ -101,14 +106,19 @@ public class ClienteController {
     /**
      * Muestra los datos de los clientes en la vista de tabla de clientes
      *
-     * @param model Modelo de valores a ser representados en la vista
+     * @param page
+     * @param model
+     * @param authentication
+     * @param request
+     * @param locale
      * @return el nombre de la vista con la que se comunica el método
      */
     @RequestMapping(value = {"/listar", "/"}, method = RequestMethod.GET)
     // Por defecto el método es GET, no sería necesario de indicarlo de forma explícita
     public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model,
                          Authentication authentication,
-                         HttpServletRequest request) {
+                         HttpServletRequest request,
+                         Locale locale) {
 
         // Obtención de autenticación. Método 1
         if (authentication != null) {
@@ -151,7 +161,7 @@ public class ClienteController {
 
         PageRender<Cliente> pageRender = new PageRender<>("/listar", clientes);
 
-        model.addAttribute("titulo", "Listado de clientes");
+        model.addAttribute("titulo", messageSource.getMessage("text.cliente.listar.titulo", null, locale));
         model.addAttribute("clientes", clientes); // Retornamos clientes con paginación
         model.addAttribute("page", pageRender);
         return "listar";
@@ -181,18 +191,6 @@ public class ClienteController {
         // Toda clase rol o que represente un rol en Spring Security tiene que implementar la interfaz GrantedAuthority
         Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
 
-        /*for (GrantedAuthority authority : authorities) {
-            if (role.equals(authority.getAuthority())) {
-                logger.info("Hola usuario ".concat(auth.getName()).concat(" tu rol es: ").concat(authority.getAuthority()));
-                return true;
-            }
-        }
-
-        return false;
-        */
-
-        /* El método contains(GrantedAuthority) retorna un booleano, TRUE o FALSE, si contiene o no el elemento en la
-         * colección */
         return authorities.contains(new SimpleGrantedAuthority(role));
     }
 
