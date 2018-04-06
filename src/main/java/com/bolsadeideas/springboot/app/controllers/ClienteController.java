@@ -106,11 +106,11 @@ public class ClienteController {
     /**
      * Muestra los datos de los clientes en la vista de tabla de clientes
      *
-     * @param page
-     * @param model
-     * @param authentication
-     * @param request
-     * @param locale
+     * @param page numero de página a listar
+     * @param model contenedor para el paso de mensajes a la vista
+     * @param authentication credenciales de autenticación del usuario
+     * @param request contenedor de información de solicitud para el servlet
+     * @param locale especificación de la región geográfica, política o cultural
      * @return el nombre de la vista con la que se comunica el método
      */
     @RequestMapping(value = {"/listar", "/"}, method = RequestMethod.GET)

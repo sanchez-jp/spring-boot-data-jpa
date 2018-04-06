@@ -26,10 +26,11 @@
         
         <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
             <a class="navbar-brand" href="#">Preving</a>
-            
+    
+            <!-- Menú de secciones -->
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Inicio <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" th:href="@{/listar}">Inicio <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/form}">Nuevo Cliente</a>
@@ -38,13 +39,15 @@
                     <a class="nav-link" th:href="@{/listar}">Listado de Clientes</a>
                 </li>
             </ul>
-            
-            <!-- form class="form-inline my-2 my-lg-0">
+    
+            <!-- Menú de búsqueda -->
+            <!--form class="form-inline my-2 my-lg-0 mx-4">
                 <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Search"/>
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buscar</button>
             </form-->
-            
-            <ul class="navbar-nav navbar-right">
+    
+            <!-- Menú de autenticación de usuario -->
+            <ul class="navbar-nav navbar-right mx-4">
                 <li sec:authorize="!isAuthenticated()" class="nav-item"><a class="btn btn-outline-primary"
                                                                            th:href="@{login}">Sign In</a></li>
                 
@@ -67,6 +70,7 @@
                 </li>
             </ul>
     
+            <!-- Menú de navegación de idioma -->
             <ul class="navbar-nav navbar-right mx-4">
                 <li class="nav-item mx-1"><a class="btn btn-outline-success" th:href="@{/locale(lang=es_ES)}">ES</a>
                 </li>
@@ -75,6 +79,20 @@
                 <li class="nav-item mx-1"><a class="btn btn-outline-success" th:href="@{/locale(lang=de_DE)}">DE</a>
                 </li>
     
+                <li class="nav-item dropdown show mx-2">
+                    <a class="btn btn-outline-primary dropdown-toggle" href="#"
+                       role="button" id="dropdownLanguage" data-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">
+                        <span th:text="#{text.locale.language}"></span>
+                    </a>
+        
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" th:href="@{/locale(lang=es_ES)}" th:text="#{text.locale.es}">ES</a>
+                        <a class="dropdown-item" th:href="@{/locale(lang=en_US)}" th:text="#{text.locale.en}">EN</a>
+                        <a class="dropdown-item" th:href="@{/locale(lang=de_DE)}" th:text="#{text.locale.de}">DE</a>
+                    </div>
+                </li>
+
             </ul>
         
         </div>
